@@ -11,16 +11,12 @@ use crate::internal::*;
 pub use crate::metadata::*;
 pub use crate::mint::*;
 pub use crate::nft_core::*;
-pub use crate::approval::*;
-pub use crate::royalty::*;
 
 mod internal;
-mod approval; 
 mod enumeration; 
 mod metadata; 
 mod mint; 
 mod nft_core; 
-mod royalty; 
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
