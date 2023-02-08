@@ -59,7 +59,7 @@ trait NonFungibleTokenResolver {
 #[near_bindgen]
 impl NonFungibleTokenCore for Contract {
 
-    //implementation of the nft_transfer method. This transfers the NFT from the current owner to the receiver. 
+    //implementation of the nft_transfer method. This transfers the NFT from the current owner to the receiver.
     #[payable]
     fn nft_transfer(
         &mut self,
@@ -67,7 +67,7 @@ impl NonFungibleTokenCore for Contract {
         token_id: TokenId,
         memo: Option<String>,
     ) {
-        //assert that the user attached exactly 1 yoctoNEAR. This is for security and so that the user will be redirected to the NEAR wallet. 
+        //assert that the user attached exactly 1 yoctoNEAR. This is for security and so that the user will be redirected to the NEAR wallet.
         assert_one_yocto();
         //get the sender to transfer the token from the sender to the receiver
         let sender_id = env::predecessor_account_id();
@@ -81,6 +81,7 @@ impl NonFungibleTokenCore for Contract {
         );
     }
 
+    // TODO Remove this method?
     //implementation of the transfer call method. This will transfer the NFT and call a method on the receiver_id contract
     #[payable]
     fn nft_transfer_call(
@@ -90,9 +91,9 @@ impl NonFungibleTokenCore for Contract {
         memo: Option<String>,
         msg: String,
     ) -> PromiseOrValue<bool> {
-        //assert that the user attached exactly 1 yocto for security reasons. 
+        //assert that the user attached exactly 1 yocto for security reasons.
         assert_one_yocto();
-        //get the sender ID 
+        //get the sender ID
         let sender_id = env::predecessor_account_id();
 
         //transfer the token and get the previous token object
@@ -108,9 +109,9 @@ impl NonFungibleTokenCore for Contract {
         ext_non_fungible_token_receiver::ext(receiver_id.clone())
             .with_static_gas(GAS_FOR_NFT_ON_TRANSFER)
             .nft_on_transfer(
-                sender_id, 
-                previous_token.owner_id.clone(), 
-                token_id.clone(), 
+                sender_id,
+                previous_token.owner_id.clone(),
+                token_id.clone(),
                 msg
             )
         // We then resolve the promise and call nft_resolve_transfer on our own contract
@@ -144,6 +145,7 @@ impl NonFungibleTokenCore for Contract {
     }
 }
 
+// TODO Remove this implementation?
 #[near_bindgen]
 impl NonFungibleTokenResolver for Contract {
     //resolves the cross contract call when calling nft_on_transfer in the nft_transfer_call method
@@ -162,8 +164,8 @@ impl NonFungibleTokenResolver for Contract {
             if let Ok(return_token) = near_sdk::serde_json::from_slice::<bool>(&value) {
                 //if we need don't need to return the token, we simply return true meaning everything went fine
                 if !return_token {
-                    /* 
-                        since we've already transferred the token and nft_on_transfer returned false, we don't have to 
+                    /*
+                        since we've already transferred the token and nft_on_transfer returned false, we don't have to
                         revert the original transfer and thus we can just return true since nothing went wrong.
                     */
                     return true;
@@ -191,7 +193,7 @@ impl NonFungibleTokenResolver for Contract {
         //we add the token to the original owner
         self.internal_add_token_to_owner(&owner_id, &token_id);
 
-        //we change the token struct's owner to be the original owner 
+        //we change the token struct's owner to be the original owner
         token.owner_id = owner_id;
         //we inset the token back into the tokens_by_id collection
         self.tokens_by_id.insert(&token_id, &token);

@@ -66,7 +66,7 @@ impl Contract {
         //we insert the token ID into the set
         tokens_set.insert(token_id);
 
-        //we insert that set for the given account ID. 
+        //we insert that set for the given account ID.
         self.tokens_per_owner.insert(account_id, &tokens_set);
     }
 
@@ -90,7 +90,7 @@ impl Contract {
         if tokens_set.is_empty() {
             self.tokens_per_owner.remove(account_id);
         } else {
-        //if the token set is not empty, we simply insert it back for the account ID. 
+        //if the token set is not empty, we simply insert it back for the account ID.
             self.tokens_per_owner.insert(account_id, &tokens_set);
         }
     }
@@ -116,19 +116,25 @@ impl Contract {
             "The token owner and the receiver should be different"
         );
 
+        //verify granted permits
+        let token_metadata = self.token_metadata_by_id.get(token_id).unwrap();
+        if self.permits_granted.get(receiver_id) != Some(token_metadata.user_id) {
+            env::panic_str("Unauthorized");
+        }
+
         //we remove the token from it's current owner's set
         self.internal_remove_token_from_owner(&token.owner_id, token_id);
         //we then add the token to the receiver_id's set
         self.internal_add_token_to_owner(receiver_id, token_id);
 
-        //we create a new token struct 
+        //we create a new token struct
         let new_token = Token {
             owner_id: receiver_id.clone(),
         };
-        //insert that new token into the tokens_by_id, replacing the old entry 
+        //insert that new token into the tokens_by_id, replacing the old entry
         self.tokens_by_id.insert(token_id, &new_token);
 
-        //if there was some memo attached, we log it. 
+        //if there was some memo attached, we log it.
         if let Some(memo) = memo {
             env::log_str(&format!("Memo: {}", memo).to_string());
         }
@@ -136,4 +142,4 @@ impl Contract {
         //return the previous token object that was transferred.
         token
     }
-} 
+}

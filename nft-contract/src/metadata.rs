@@ -5,7 +5,7 @@ pub type TokenId = String;
 #[serde(crate = "near_sdk::serde")]
 pub struct Payout {
     pub payout: HashMap<AccountId, U128>,
-} 
+}
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -22,6 +22,7 @@ pub struct NFTContractMetadata {
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct TokenMetadata {
+    pub user_id: UserId, // The real user of the token,
     pub title: Option<String>, // ex. "Arch Nemesis: Mail Carrier" or "Parcel #5055"
     pub description: Option<String>, // free-form description
     pub media: Option<String>, // URL to associated media, preferably to decentralized, content-addressed storage
@@ -42,7 +43,7 @@ pub struct Token {
     pub owner_id: AccountId,
 }
 
-//The Json token is what will be returned from view calls. 
+//The Json token is what will be returned from view calls.
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct JsonToken {

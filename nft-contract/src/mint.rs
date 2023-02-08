@@ -12,7 +12,7 @@ impl Contract {
         //measure the initial storage being used on the contract
         let initial_storage_usage = env::storage_usage();
 
-        //specify the token struct that contains the owner ID 
+        //specify the token struct that contains the owner ID
         let token = Token {
             //set the owner ID equal to the receiver ID passed into the function
             owner_id: receiver_id,
@@ -23,6 +23,13 @@ impl Contract {
             self.tokens_by_id.insert(&token_id, &token).is_none(),
             "Token already exists"
         );
+
+        // TODO check what happens (or should happen) if someone tries to mint several NFTs for the same permit
+        //verify granted permits
+        let user_id = metadata.user_id.clone();
+        if self.permits_granted.get(&token.owner_id) != Some(user_id) {
+            env::panic_str("Unauthorized");
+        }
 
         //insert the token ID and metadata
         self.token_metadata_by_id.insert(&token_id, &metadata);
