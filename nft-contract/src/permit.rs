@@ -61,11 +61,6 @@ impl PermitVerifier for Contract {
     }
 
     fn get_oracle_permits_to_verify(&self) -> Vec<Permit> {
-        let oracle_id = env::signer_account_id();
-        if oracle_id != self.owner_id {
-			env::panic_str("Unauthorized");
-		}
-
         self.permits_to_verify.iter()
         .take(100)
         .map(|(account_id, user_id)| Permit{account_id: account_id, user_id: user_id})
