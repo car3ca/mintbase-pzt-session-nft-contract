@@ -13,6 +13,8 @@ pub use crate::mint::*;
 pub use crate::nft_core::*;
 pub use crate::permit::*;
 
+pub type UserId = String;
+
 mod internal;
 mod enumeration;
 mod metadata;
@@ -28,6 +30,9 @@ pub struct Contract {
 
     //keeps track of all the token IDs for a given account
     pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
+
+    //keeps track of all the token IDs for a given user
+    pub tokens_per_user: LookupMap<UserId, UnorderedSet<TokenId>>,
 
     //keeps track of the token struct for a given token ID
     pub tokens_by_id: LookupMap<TokenId, Token>,
@@ -49,7 +54,9 @@ pub struct Contract {
 #[derive(BorshSerialize)]
 pub enum StorageKey {
     TokensPerOwner,
+    TokensPerUser,
     TokenPerOwnerInner { account_id_hash: CryptoHash },
+    TokenPerUserInner { user_id_hash: CryptoHash },
     TokensById,
     TokenMetadataById,
     NFTContractMetadata,
@@ -95,6 +102,7 @@ impl Contract {
         let this = Self {
             //Storage keys are simply the prefixes used for the collections. This helps avoid data collision
             tokens_per_owner: LookupMap::new(StorageKey::TokensPerOwner.try_to_vec().unwrap()),
+            tokens_per_user: LookupMap::new(StorageKey::TokensPerUser.try_to_vec().unwrap()),
             tokens_by_id: LookupMap::new(StorageKey::TokensById.try_to_vec().unwrap()),
             token_metadata_by_id: UnorderedMap::new(
                 StorageKey::TokenMetadataById.try_to_vec().unwrap(),

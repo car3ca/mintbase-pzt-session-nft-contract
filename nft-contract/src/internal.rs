@@ -11,6 +11,16 @@ pub(crate) fn hash_account_id(account_id: &AccountId) -> CryptoHash {
     hash
 }
 
+//used to generate a unique prefix in our storage collections (this is to avoid data collisions)
+pub(crate) fn hash_user_id(user_id: &UserId) -> CryptoHash {
+    //get the default hash
+    let mut hash = CryptoHash::default();
+    //we hash the account ID and return it
+    hash.copy_from_slice(&env::sha256(user_id.as_bytes()));
+    hash
+}
+
+
 //used to make sure the user attached exactly 1 yoctoNEAR
 pub(crate) fn assert_one_yocto() {
     assert_eq!(
@@ -70,6 +80,32 @@ impl Contract {
         self.tokens_per_owner.insert(account_id, &tokens_set);
     }
 
+    //add a token to the set of tokens an user has
+    pub(crate) fn internal_add_token_to_user(
+        &mut self,
+        user_id: &UserId,
+        token_id: &TokenId,
+    ) {
+        //get the set of tokens for the given account
+        let mut tokens_set = self.tokens_per_user.get(user_id).unwrap_or_else(|| {
+            //if the account doesn't have any tokens, we create a new unordered set
+            UnorderedSet::new(
+                StorageKey::TokenPerUserInner {
+                    //we get a new unique prefix for the collection
+                    user_id_hash: hash_user_id(&user_id),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+
+        //we insert the token ID into the set
+        tokens_set.insert(token_id);
+
+        //we insert that set for the given account ID.
+        self.tokens_per_user.insert(user_id, &tokens_set);
+    }
+
     //remove a token from an owner (internal method and can't be called directly via CLI).
     pub(crate) fn internal_remove_token_from_owner(
         &mut self,
@@ -106,10 +142,8 @@ impl Contract {
         //get the token object by passing in the token_id
         let token = self.tokens_by_id.get(token_id).expect("No token");
 
-        //if the sender doesn't equal the owner, we panic
-		if sender_id != &token.owner_id {
-			env::panic_str("Unauthorized");
-		}
+        //if the sender doesn't equal the owner, we will not panic :D
+
         //we make sure that the sender isn't sending the token to themselves
         assert_ne!(
             &token.owner_id, receiver_id,

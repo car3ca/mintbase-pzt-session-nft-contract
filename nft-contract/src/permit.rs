@@ -5,8 +5,6 @@ static VERIFICATION_FEE_TEXT: &str = "0.1";
 const base: u128 = 10;
 const VERIFICATION_FEE_YOCTO: u128 = 100 * base.pow(21);
 
-pub type UserId = String;
-
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Permit {
@@ -15,7 +13,7 @@ pub struct Permit {
 }
 
 pub trait PermitVerifier {
-    fn verify_permit(&mut self, user_id: UserId);
+    fn permit_request(&mut self, user_id: UserId);
     fn permits_granted(&mut self, permits: Vec<Permit>);
     fn permits_rejected(&mut self, permit: Vec<Permit>);
     fn get_oracle_permits_to_verify(&self) -> Vec<Permit>;
@@ -25,7 +23,7 @@ pub trait PermitVerifier {
 #[near_bindgen]
 impl PermitVerifier for Contract {
     #[payable]
-    fn verify_permit(&mut self, user_id: UserId) {
+    fn permit_request(&mut self, user_id: UserId) {
         // require enough amount for this and oracle actions
         if near_sdk::env::attached_deposit() != VERIFICATION_FEE_YOCTO {
             let deposit_msg = format!("Please deposit exactly {} NEAR for paying the verification process.", VERIFICATION_FEE_TEXT);

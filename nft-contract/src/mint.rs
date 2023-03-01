@@ -36,6 +36,9 @@ impl Contract {
 
         //call the internal method for adding the token to the owner
         self.internal_add_token_to_owner(&token.owner_id, &token_id);
+        //call the internal method for adding the token to the user permanently
+        let user_id = metadata.user_id.clone();
+        self.internal_add_token_to_user(&user_id, &token_id);
 
         //calculate the required storage which was the used - initial
         let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
