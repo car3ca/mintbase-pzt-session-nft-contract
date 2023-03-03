@@ -2,8 +2,8 @@ use crate::*;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 
 static VERIFICATION_FEE_TEXT: &str = "0.1";
-const base: u128 = 10;
-const VERIFICATION_FEE_YOCTO: u128 = 100 * base.pow(21);
+const BASE: u128 = 10;
+const VERIFICATION_FEE_YOCTO: u128 = 100 * BASE.pow(21);
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]

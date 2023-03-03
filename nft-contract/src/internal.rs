@@ -1,6 +1,5 @@
 use crate::*;
 use near_sdk::{CryptoHash};
-use std::mem::size_of;
 
 //used to generate a unique prefix in our storage collections (this is to avoid data collisions)
 pub(crate) fn hash_account_id(account_id: &AccountId) -> CryptoHash {
@@ -134,7 +133,7 @@ impl Contract {
     //transfers the NFT to the receiver_id (internal method and can't be called directly via CLI).
     pub(crate) fn internal_transfer(
         &mut self,
-        sender_id: &AccountId,
+        _sender_id: &AccountId,
         receiver_id: &AccountId,
         token_id: &TokenId,
         memo: Option<String>,
@@ -151,8 +150,8 @@ impl Contract {
         );
 
         //verify granted permits
-        let token_metadata = self.token_metadata_by_id.get(token_id).unwrap();
-        if self.permits_granted.get(receiver_id) != Some(token_metadata.user_id) {
+        let user_id = token.user_id.clone();
+        if self.permits_granted.get(receiver_id) != Some(user_id) {
             env::panic_str("Unauthorized");
         }
 
@@ -164,6 +163,7 @@ impl Contract {
         //we create a new token struct
         let new_token = Token {
             owner_id: receiver_id.clone(),
+            user_id: token.user_id.clone()
         };
         //insert that new token into the tokens_by_id, replacing the old entry
         self.tokens_by_id.insert(token_id, &new_token);
