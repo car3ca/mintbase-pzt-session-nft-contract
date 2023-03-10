@@ -105,6 +105,36 @@ impl Contract {
         self.tokens_per_user.insert(user_id, &tokens_set);
     }
 
+    pub(crate) fn internal_remove_token_from_user(
+        &mut self,
+        user_id: &UserId,
+        token_id: &TokenId,
+    ) {
+        //get the set of tokens for the given account
+        let mut tokens_set = self.tokens_per_user.get(user_id).unwrap_or_else(|| {
+            //if the account doesn't have any tokens, we create a new unordered set
+            UnorderedSet::new(
+                StorageKey::TokenPerUserInner {
+                    //we get a new unique prefix for the collection
+                    user_id_hash: hash_user_id(&user_id),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+
+        //we insert the token ID into the set
+        tokens_set.remove(token_id);
+
+        //if the token set is now empty, we remove the owner from the tokens_per_owner collection
+        if tokens_set.is_empty() {
+            self.tokens_per_user.remove(user_id);
+        } else {
+        //if the token set is not empty, we simply insert it back for the user ID.
+            self.tokens_per_user.insert(user_id, &tokens_set);
+        }
+    }
+
     //remove a token from an owner (internal method and can't be called directly via CLI).
     pub(crate) fn internal_remove_token_from_owner(
         &mut self,
