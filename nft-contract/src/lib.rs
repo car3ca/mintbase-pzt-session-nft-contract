@@ -45,10 +45,10 @@ pub struct Contract {
     pub metadata: LazyOption<NFTContractMetadata>,
 
     // keeps track of permits to be verified by the oracle bot
-    pub permits_to_verify: UnorderedMap<AccountId, UserId>,
+    pub permits_to_verify: UnorderedMap<UserId, AccountId>,
 
     // keeps track of permits granted
-    pub permits_granted: LookupMap<AccountId, UserId>,
+    pub permits_granted: LookupMap<UserId, AccountId>,
 }
 
 /// Helper structure for keys of the persistent collections.

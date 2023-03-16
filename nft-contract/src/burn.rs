@@ -16,7 +16,8 @@ impl Contract {
 
         //verify granted permits
         let user_id = token.user_id.clone();
-        if self.permits_granted.get(&owner_id) != Some(user_id) {
+        let permit_account_id = self.permits_granted.get(&user_id).expect("Unauthorized");
+        if permit_account_id != owner_id {
             env::panic_str("Unauthorized");
         }
 

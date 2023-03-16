@@ -8,8 +8,8 @@ const VERIFICATION_FEE_YOCTO: u128 = 100 * BASE.pow(21);
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Permit {
-    account_id: AccountId,
     user_id: UserId,
+    account_id: AccountId,
 }
 
 pub trait PermitVerifier {
@@ -17,6 +17,7 @@ pub trait PermitVerifier {
     fn permits_granted(&mut self, permits: Vec<Permit>);
     fn permits_rejected(&mut self, permit: Vec<Permit>);
     fn get_oracle_permits_to_verify(&self) -> Vec<Permit>;
+    fn permit_for_user(&self, user_id: UserId) -> Option<Permit>;
 }
 
 
@@ -30,7 +31,7 @@ impl PermitVerifier for Contract {
             near_sdk::env::panic_str(&deposit_msg);
         }
         let account_id = env::signer_account_id();
-        self.permits_to_verify.insert(&account_id, &user_id);
+        self.permits_to_verify.insert(&user_id, &account_id);
     }
 
     #[payable]
@@ -41,8 +42,9 @@ impl PermitVerifier for Contract {
 		}
         for permit in permits.iter() {
             // TODO send event
-            self.permits_granted.insert(&permit.account_id, &permit.user_id);
-            self.permits_to_verify.remove(&permit.account_id);
+            self.permits_granted.remove(&permit.user_id);
+            self.permits_granted.insert(&permit.user_id, &permit.account_id);
+            self.permits_to_verify.remove(&permit.user_id);
         }
     }
 
@@ -54,14 +56,25 @@ impl PermitVerifier for Contract {
 		}
         for permit in permits.iter() {
             // TODO send event
-            self.permits_to_verify.remove(&permit.account_id);
+            self.permits_to_verify.remove(&permit.user_id);
         }
     }
 
     fn get_oracle_permits_to_verify(&self) -> Vec<Permit> {
         self.permits_to_verify.iter()
         .take(100)
-        .map(|(account_id, user_id)| Permit{account_id: account_id, user_id: user_id})
+        .map(|(user_id, account_id)| Permit{user_id: user_id, account_id: account_id})
         .collect()
+    }
+
+    //Query for all the granted permits
+    fn permit_for_user(&self, user_id: UserId) -> Option<Permit> {
+        //get the permit for the passed in user
+        let account_id = self.permits_granted.get(&user_id);
+        if account_id.is_none() {
+            None
+        } else {
+            Some(Permit{user_id: user_id, account_id: account_id.unwrap()})
+        }
     }
 }

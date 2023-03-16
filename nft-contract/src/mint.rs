@@ -20,7 +20,7 @@ impl Contract {
         //specify the token struct that contains the owner ID
         let token = Token {
             //set the owner ID equal to the receiver ID passed into the function
-            owner_id: receiver_id,
+            owner_id: receiver_id.clone(),
             user_id: extra.user_id.clone()
         };
 
@@ -32,7 +32,8 @@ impl Contract {
 
         // TODO check what happens (or should happen) if someone tries to mint several NFTs for the same permit
         //verify granted permits
-        if self.permits_granted.get(&token.owner_id) != Some(user_id) {
+        let permit_account_id = self.permits_granted.get(&user_id).expect("Unauthorized");
+        if permit_account_id != receiver_id {
             env::panic_str("Unauthorized");
         }
 
@@ -88,7 +89,7 @@ impl Contract {
         //specify the token struct that contains the owner ID
         let token = Token {
             //set the owner ID equal to the receiver ID passed into the function
-            owner_id: owner_id,
+            owner_id: owner_id.clone(),
             user_id: user_id
         };
 
@@ -101,7 +102,8 @@ impl Contract {
         // TODO check what happens (or should happen) if someone tries to mint several NFTs for the same permit
         //verify granted permits
         let user_id = extra.user_id.clone();
-        if self.permits_granted.get(&token.owner_id) != Some(user_id) {
+        let permit_account_id = self.permits_granted.get(&user_id).expect("Unauthorized");
+        if permit_account_id != owner_id {
             env::panic_str("Unauthorized");
         }
 
