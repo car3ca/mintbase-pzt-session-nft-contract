@@ -12,6 +12,7 @@ pub use crate::metadata::*;
 pub use crate::mint::*;
 pub use crate::nft_core::*;
 pub use crate::permit::*;
+pub use crate::events::*;
 
 pub type UserId = String;
 
@@ -22,6 +23,12 @@ mod mint;
 mod nft_core;
 mod permit;
 mod burn;
+mod events;
+
+/// This spec can be treated like a version of the standard.
+pub const NFT_METADATA_SPEC: &str = "1.0.0";
+/// This is the name of the NFT standard we're using
+pub const NFT_STANDARD_NAME: &str = "nep171";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
