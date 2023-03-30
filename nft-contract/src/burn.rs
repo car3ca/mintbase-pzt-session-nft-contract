@@ -30,6 +30,8 @@ impl Contract {
         self.tokens_by_id.remove(&token_id);
         self.token_metadata_by_id.remove(&token_id);
 
+        let authorized_id = None;
+        let memo = None;
         // Construct the mint log as per the events standard.
         let nft_burn_log: EventLog = EventLog {
             // Standard name ("nep171").
@@ -38,10 +40,14 @@ impl Contract {
             version: NFT_METADATA_SPEC.to_string(),
             // The data related with the event stored in a vector.
             event: EventLogVariant::NftBurn(vec![NftBurnLog {
+                // The optional authorized account ID to transfer the token on behalf of the old owner.
+                authorized_id,
                 // Owner of the token.
                 owner_id: token.owner_id.to_string(),
                 // Vector of token IDs that were minted.
                 token_ids: vec![token_id.to_string()],
+                // An optional memo to include.
+                memo,
             }]),
         };
 

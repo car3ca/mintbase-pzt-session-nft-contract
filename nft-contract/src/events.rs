@@ -66,8 +66,13 @@ pub struct NftMintLog {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct NftBurnLog {
+    pub authorized_id: Option<String>,
+
     pub owner_id: String,
     pub token_ids: Vec<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub memo: Option<String>,
 }
 
 /// An event log to capture token transfer
